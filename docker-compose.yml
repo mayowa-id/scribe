@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: scribe-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-scribe}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-scribe_secret}
+      POSTGRES_DB: ${DB_DATABASE:-scribe}
+    ports:
+      - "${DB_PORT_MACHINE:-5432}:${DB_PORT:-5432}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: scribe-redis
+    ports:
+      - "${REDIS_PORT_MACHINE:-6379}:6379"
+
+  backend:
+    build: ./
+    container_name: scribe-api
+    volumes:
+      - ./:/app/
+      - /app/node_modules
+    ports:
+      - "${SERVER_PORT_MACHINE:-3000}:${SERVER_PORT:-3000}"
+      - "9229:9229"
+    depends_on:
+      - postgres
+      - redis
+    env_file: ".env"
+
+  notiscope:
+    image: mayowaid/notiscope:latest
+    container_name: scribe-notiscope
+    environment:
+      DATABASE_URL: postgresql://notiscope:notiscope_secret@notiscope-db:5432/notiscope
+      REDIS_URL: redis://redis:6379/2
+      CELERY_BROKER_URL: redis://redis:6379/2
+      CELERY_RESULT_BACKEND: redis://redis:6379/3
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      SES_FROM_EMAIL: ${NOTISCOPE_FROM_EMAIL}
+    depends_on:
+      - redis
+      - notiscope-db
+    ports:
+      - "8000:8000"
+
+  notiscope-db:
+    image: postgres:16-alpine
+    container_name: scribe-notiscope-db
+    environment:
+      POSTGRES_USER: notiscope
+      POSTGRES_PASSWORD: notiscope_secret
+      POSTGRES_DB: notiscope
+    volumes:
+      - notiscope_db_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  notiscope_db_data:
