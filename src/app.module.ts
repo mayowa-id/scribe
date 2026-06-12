@@ -10,6 +10,7 @@ import { dbConfig, redisConfig } from './configs';
 
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { PlanModule } from './modules/plan/plan.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthModule } from './modules/auth/auth.module';
     ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
+    PlanModule,
     // Feature modules will be added here
   ],
   controllers: [AppController],
