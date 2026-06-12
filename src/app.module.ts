@@ -8,12 +8,17 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { dbConfig, redisConfig } from './configs';
 
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync(dbConfig),
     RedisModule.forRootAsync(redisConfig),
     ScheduleModule.forRoot(),
+    UserModule,
+    AuthModule,
     // Feature modules will be added here
   ],
   controllers: [AppController],
