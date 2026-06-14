@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
+import { AiService } from './ai.service';
 
-@Module({})
+@Global()
+@Module({
+  providers: [AiService],
+  exports: [AiService],
+})
 export class AiModule {}
