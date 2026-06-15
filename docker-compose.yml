@@ -31,34 +31,8 @@ services:
       - redis
     env_file: ".env"
 
-  notiscope:
-    image: mayowaid/notiscope:latest
-    container_name: scribe-notiscope
-    environment:
-      DATABASE_URL: postgresql://notiscope:notiscope_secret@notiscope-db:5432/notiscope
-      REDIS_URL: redis://redis:6379/2
-      CELERY_BROKER_URL: redis://redis:6379/2
-      CELERY_RESULT_BACKEND: redis://redis:6379/3
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-      SES_FROM_EMAIL: ${NOTISCOPE_FROM_EMAIL}
-    depends_on:
-      - redis
-      - notiscope-db
-    ports:
-      - "8000:8000"
-
-  notiscope-db:
-    image: postgres:16-alpine
-    container_name: scribe-notiscope-db
-    environment:
-      POSTGRES_USER: notiscope
-      POSTGRES_PASSWORD: notiscope_secret
-      POSTGRES_DB: notiscope
-    volumes:
-      - notiscope_db_data:/var/lib/postgresql/data
+  # Notiscope is a separate, independent service running on EC2 at http://13.60.84.255:8000
+  # Scribe calls it via HTTP — no local container needed.
 
 volumes:
   postgres_data:
-  notiscope_db_data:
