@@ -44,7 +44,7 @@ export class SynthesisProcessor extends WorkerHost {
       const responses = await this.responseRepo.find({ where: { sessionId: session.id } });
       
       const allAttributes = responses.reduce((acc, r) => {
-        return { ...acc, ...(r.extractedAttributes || {}) };
+        return { ...acc, ...(r.extractedData || {}) };
       }, {} as Record<string, any>);
 
       const synthesizedPrompt = await this.aiService.synthesizeVoiceProfile(allAttributes);

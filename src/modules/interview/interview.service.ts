@@ -31,14 +31,14 @@ export class InterviewService {
     const profile = this.voiceProfileRepo.create({
       userId,
       name: dto.title,
-      status: VoiceProfileStatus.INTERVIEW_PENDING,
+      status: VoiceProfileStatus.INTERVIEW_IN_PROGRESS,
     });
     await this.voiceProfileRepo.save(profile);
 
     const session = this.sessionRepo.create({
       userId,
       voiceProfileId: profile.id,
-      status: InterviewSessionStatus.IN_PROGRESS,
+      status: InterviewSessionStatus.ACTIVE,
     });
     await this.sessionRepo.save(session);
 
@@ -74,7 +74,7 @@ export class InterviewService {
     const response = this.responseRepo.create({
       sessionId: dto.sessionId,
       questionId: dto.questionId,
-      answerText: dto.answerText,
+      rawAnswer: dto.answerText,
     });
     await this.responseRepo.save(response);
 
@@ -93,7 +93,7 @@ export class InterviewService {
     await this.sessionRepo.save(session);
 
     await this.voiceProfileRepo.update(session.voiceProfileId, {
-      status: VoiceProfileStatus.SYNTHESIZING,
+      status: VoiceProfileStatus.PROCESSING,
     });
 
     return { success: true };

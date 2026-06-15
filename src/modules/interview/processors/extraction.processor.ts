@@ -8,7 +8,7 @@ import { InterviewSession } from '../entities/interview-session.entity';
 import { VoiceProfile } from '../../voice-profile/entities/voice-profile.entity';
 import { InterviewQuestion } from '../entities/interview-question.entity';
 import { AiService } from '../../ai/ai.service';
-import { InterviewResponseStatus } from '../../../shared/enums';
+import { ExtractionStatus } from '../../../shared/enums';
 
 @Processor(QUEUE_NAMES.EXTRACTION)
 export class ExtractionProcessor extends WorkerHost {
@@ -32,24 +32,24 @@ export class ExtractionProcessor extends WorkerHost {
     const response = await this.responseRepo.findOne({ where: { id: responseId } });
     if (!response) return;
 
-    await this.responseRepo.update(responseId, { status: InterviewResponseStatus.EXTRACTING });
+    await this.responseRepo.update(responseId, { extractionStatus: ExtractionStatus.PENDING });
 
     const question = await this.questionRepo.findOne({ where: { id: response.questionId } });
     if (!question) return;
 
     try {
-      const extractedAttributes = await this.aiService.extractAttributes(
-        response.answerText,
+      const extractedData = await this.aiService.extractAttributes(
+        response.rawAnswer,
         question.extractFields
       );
 
       await this.responseRepo.update(responseId, {
-        extractedAttributes,
-        status: InterviewResponseStatus.PROCESSED,
+        extractedData,
+        extractionStatus: ExtractionStatus.DONE,
       });
 
     } catch (err: any) {
-      await this.responseRepo.update(responseId, { status: InterviewResponseStatus.FAILED });
+      await this.responseRepo.update(responseId, { extractionStatus: ExtractionStatus.FAILED });
       throw err;
     }
   }
