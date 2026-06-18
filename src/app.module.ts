@@ -16,6 +16,10 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AiModule } from './modules/ai/ai.module';
 import { InterviewModule } from './modules/interview/interview.module';
 import { VoiceProfileModule } from './modules/voice-profile/voice-profile.module';
+import { ProjectModule } from './modules/project/project.module';
+import { ChapterModule } from './modules/chapter/chapter.module';
+import { GenerationModule } from './modules/generation/generation.module';
+import { ScribeAssistantModule } from './modules/scribe-assistant/scribe-assistant.module';
 
 @Module({
   imports: [
@@ -24,7 +28,7 @@ import { VoiceProfileModule } from './modules/voice-profile/voice-profile.module
     RedisModule.forRootAsync(redisConfig),
     ScheduleModule.forRoot(),
 
-    // BullMQ global config — reads Redis connection from env
+    // BullMQ — global Redis connection for all queues
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -44,7 +48,10 @@ import { VoiceProfileModule } from './modules/voice-profile/voice-profile.module
     AiModule,
     InterviewModule,
     VoiceProfileModule,
-    // Generation, Chapter, ScribeAssistant modules to be added next
+    ProjectModule,
+    ChapterModule,
+    GenerationModule,
+    ScribeAssistantModule,
   ],
   controllers: [AppController],
   providers: [AppService],
