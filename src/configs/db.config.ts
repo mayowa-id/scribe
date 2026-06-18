@@ -12,6 +12,7 @@ export const dbConfig: TypeOrmModuleAsyncOptions = {
     username: configService.get<string>('DB_USER'),
     password: configService.get<string>('DB_PASSWORD'),
     database: configService.get<string>('DB_DATABASE'),
+    ssl: configService.get<string>('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
     entities: [__dirname + '/../modules/**/*.entity{.ts,.js}'],
     synchronize: false,
     namingStrategy: new SnakeNamingStrategy(),
