@@ -9,6 +9,8 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { HashUtil } from '../../utils/hash.util';
 import { TokenUtil } from '../../utils/token.util';
+import { NotificationsService } from '../notifications/notifications.service';
+import { welcomeTemplate } from '../notifications/templates/welcome.template';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +18,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private notificationsService: NotificationsService,
     @InjectRepository(RefreshToken)
     private refreshTokenRepository: Repository<RefreshToken>,
   ) {}
@@ -33,6 +36,15 @@ export class AuthService {
       passwordHash,
       fullName: registerDto.fullName,
     });
+
+    // Send welcome email (fire and forget)
+    const template = welcomeTemplate(user.fullName);
+    this.notificationsService.send({
+      recipient: user.email,
+      subject: template.subject,
+      body: template.body,
+      idempotencyKey: `welcome-${user.id}`,
+    }).catch(() => {});
 
     return this.generateTokens(user);
   }

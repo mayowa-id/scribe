@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { VoiceProfile } from './entities/voice-profile.entity';
@@ -25,14 +25,19 @@ export class VoiceProfileService {
     return profile;
   }
 
-  async setDefault(id: string, userId: string): Promise<VoiceProfile> {
+  async setDefault(id: string, userId: string): Promise<{ success: boolean }> {
     const profile = await this.findOne(id, userId);
+
+    if (profile.status !== VoiceProfileStatus.READY) {
+      throw new BadRequestException('Only ready profiles can be set as default');
+    }
 
     // Clear any existing default
     await this.voiceProfileRepo.update({ userId, isDefault: true }, { isDefault: false });
 
     profile.isDefault = true;
-    return this.voiceProfileRepo.save(profile);
+    await this.voiceProfileRepo.save(profile);
+    return { success: true };
   }
 
   async delete(id: string, userId: string): Promise<{ success: boolean }> {
@@ -40,7 +45,6 @@ export class VoiceProfileService {
     await this.voiceProfileRepo.remove(profile);
     return { success: true };
   }
-
   async getStatus(id: string, userId: string): Promise<{ id: string; status: VoiceProfileStatus; promptVersion: number }> {
     const profile = await this.findOne(id, userId);
     return {

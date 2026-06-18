@@ -11,6 +11,7 @@ import { InterviewService } from './interview.service';
 import { InterviewController } from './interview.controller';
 import { ExtractionProcessor } from './processors/extraction.processor';
 import { QUEUE_NAMES } from '../../common/constants';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
   imports: [
@@ -22,10 +23,11 @@ import { QUEUE_NAMES } from '../../common/constants';
     ]),
     BullModule.registerQueue({ name: QUEUE_NAMES.EXTRACTION }),
     BullModule.registerQueue({ name: QUEUE_NAMES.SYNTHESIS }),
+    AiModule,
   ],
   providers: [InterviewService, ExtractionProcessor],
   controllers: [InterviewController],
-  exports: [InterviewService],
+  exports: [TypeOrmModule, InterviewService],
 })
 export class InterviewModule {}
 
