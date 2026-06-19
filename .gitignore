@@ -37,3 +37,6 @@ lerna-debug.log*
 .env
 .env.test
 .env.production
+
+# AWS - downloaded task definitions contain raw secrets, never commit
+ecs-task-def.json

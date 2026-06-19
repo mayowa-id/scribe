@@ -1,0 +1,66 @@
+{
+  "family": "scribe-api-task",
+  "taskRoleArn": "arn:aws:iam::374198398968:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::374198398968:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "3072",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "scribe-api",
+      "image": "374198398968.dkr.ecr.eu-north-1.amazonaws.com/scribe-api:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp",
+          "name": "scribe-api-3000-tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "environment": [],
+      "secrets": [
+        { "name": "NODE_ENV",               "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/NODE_ENV" },
+        { "name": "SERVER_PORT",            "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/SERVER_PORT" },
+        { "name": "DB_HOST",               "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/DB_HOST" },
+        { "name": "DB_PORT",               "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/DB_PORT" },
+        { "name": "DB_USER",               "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/DB_USER" },
+        { "name": "DB_PASSWORD",           "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/DB_PASSWORD" },
+        { "name": "DB_DATABASE",           "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/DB_DATABASE" },
+        { "name": "REDIS_HOST",            "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/REDIS_HOST" },
+        { "name": "REDIS_PORT",            "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/REDIS_PORT" },
+        { "name": "JWT_SECRET",            "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/JWT_SECRET" },
+        { "name": "JWT_REFRESH_SECRET",    "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/JWT_REFRESH_SECRET" },
+        { "name": "AUTH_EXPIRESIN",        "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/AUTH_EXPIRESIN" },
+        { "name": "AUTH_REFRESH_EXPIRESIN","valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/AUTH_REFRESH_EXPIRESIN" },
+        { "name": "GOOGLE_CLIENT_ID",      "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/GOOGLE_CLIENT_ID" },
+        { "name": "GOOGLE_CLIENT_SECRET",  "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/GOOGLE_CLIENT_SECRET" },
+        { "name": "GOOGLE_CALLBACK_URL",   "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/GOOGLE_CALLBACK_URL" },
+        { "name": "GOOGLE_AI_API_KEY",     "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/GOOGLE_AI_API_KEY" },
+        { "name": "PAYSTACK_SECRET_KEY",   "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/PAYSTACK_SECRET_KEY" },
+        { "name": "PAYSTACK_PUBLIC_KEY",   "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/PAYSTACK_PUBLIC_KEY" },
+        { "name": "NOTISCOPE_BASE_URL",    "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/NOTISCOPE_BASE_URL" },
+        { "name": "NOTISCOPE_FROM_EMAIL",  "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/NOTISCOPE_FROM_EMAIL" },
+        { "name": "SES_FROM_EMAIL",        "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/SES_FROM_EMAIL" },
+        { "name": "AWS_ACCESS_KEY_ID",     "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/AWS_ACCESS_KEY_ID" },
+        { "name": "AWS_SECRET_ACCESS_KEY", "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/AWS_SECRET_ACCESS_KEY" },
+        { "name": "FRONTEND_URL",          "valueFrom": "arn:aws:ssm:eu-north-1:374198398968:parameter/scribe/prod/FRONTEND_URL" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/scribe-api",
+          "awslogs-create-group": "true",
+          "awslogs-region": "eu-north-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

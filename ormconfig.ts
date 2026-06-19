@@ -4,6 +4,8 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 dotenv.config();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
@@ -11,12 +13,20 @@ const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
   migrationsTableName: 'migrations',
-  entities: ['src/**/*.entity.ts'],
-  migrations: ['migrations/*.ts'],
+  // In production (container), entities and migrations are compiled JS.
+  // Locally, they are TypeScript source files.
+  entities: isProduction
+    ? ['dist/**/*.entity.js']
+    : ['src/**/*.entity.ts'],
+  migrations: isProduction
+    ? ['dist/migrations/*.js']
+    : ['migrations/*.ts'],
   namingStrategy: new SnakeNamingStrategy(),
-  synchronize: false,
+  // Use synchronize in production ONLY if no migrations exist yet.
+  // Switch to false once you have real migration files.
+  synchronize: isProduction,
   invalidWhereValuesBehavior: { null: 'throw', undefined: 'throw' },
 });
 
