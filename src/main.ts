@@ -6,7 +6,7 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
-async function bootstrap() {
+export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Security
@@ -25,6 +25,11 @@ async function bootstrap() {
 
   const port = process.env.SERVER_PORT || 3000;
   await app.listen(port);
-  console.log(`🚀 Application is running on: http://localhost:${port}`);
+  console.log(`Application is running on: http://localhost:${port}`);
 }
-bootstrap();
+
+// Allow direct execution (local dev: `node dist/main`)
+// and also import by migrate-and-start in production.
+if (require.main === module) {
+  bootstrap();
+}
