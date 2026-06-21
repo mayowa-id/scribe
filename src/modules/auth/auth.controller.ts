@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResponseUtil } from '../../utils/response.util';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -54,5 +55,11 @@ export class AuthController {
     // Redirect to frontend with tokens in query params or cookie
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3001');
     return res.redirect(`${frontendUrl}/auth/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body() verifyDto: VerifyEmailDto) {
+    await this.authService.verifyEmail(verifyDto);
+    return ResponseUtil.success(null, 'Email verified successfully');
   }
 }
