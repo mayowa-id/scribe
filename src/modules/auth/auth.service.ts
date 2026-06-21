@@ -11,6 +11,8 @@ import { HashUtil } from '../../utils/hash.util';
 import { TokenUtil } from '../../utils/token.util';
 import { NotificationsService } from '../notifications/notifications.service';
 import { welcomeTemplate } from '../notifications/templates/welcome.template';
+import { verificationTemplate } from '../notifications/templates/verification.template';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @Injectable()
 export class AuthService {
@@ -30,20 +32,25 @@ export class AuthService {
     }
 
     const passwordHash = await HashUtil.hash(registerDto.password);
+    
+    // Generate a random 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = await this.userService.create({
       email: registerDto.email,
       passwordHash,
       fullName: registerDto.fullName,
+      emailVerificationToken: verificationCode,
+      isEmailVerified: false,
     });
 
-    // Send welcome email (fire and forget)
-    const template = welcomeTemplate(user.fullName);
+    // Send verification email (fire and forget)
+    const template = verificationTemplate(user.fullName, verificationCode);
     this.notificationsService.send({
       recipient: user.email,
       subject: template.subject,
       body: template.body,
-      idempotencyKey: `welcome-${user.id}`,
+      idempotencyKey: `verify-${user.id}`,
     }).catch(() => {});
 
     return this.generateTokens(user);
@@ -53,6 +60,10 @@ export class AuthService {
     const user = await this.userService.findByEmail(loginDto.email);
     if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (!user.isEmailVerified) {
+      throw new UnauthorizedException('Email not verified. Please check your inbox for the verification code.');
     }
 
     const isPasswordValid = await HashUtil.compare(loginDto.password, user.passwordHash);
@@ -111,6 +122,37 @@ export class AuthService {
       .execute();
 
     return this.generateTokens(refreshTokenRecord.user);
+  }
+
+  async verifyEmail(verifyDto: VerifyEmailDto) {
+    const user = await this.userService.findByEmail(verifyDto.email);
+    
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email is already verified');
+    }
+
+    if (user.emailVerificationToken !== verifyDto.code) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = null;
+    await this.userService.save(user);
+
+    // Now send the actual welcome email
+    const template = welcomeTemplate(user.fullName);
+    this.notificationsService.send({
+      recipient: user.email,
+      subject: template.subject,
+      body: template.body,
+      idempotencyKey: `welcome-${user.id}`,
+    }).catch(() => {});
+
+    return true;
   }
 
   async logout(userId: string) {
