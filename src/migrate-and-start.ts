@@ -49,6 +49,10 @@ async function runMigrationsAndStart() {
     console.log('No pending migrations.');
   }
 
+  console.log('Running one-time user cleanup...');
+  await dataSource.query("DELETE FROM users WHERE email = 'idowumayowa02@gmail.com'");
+  console.log('User cleanup complete.');
+
   await dataSource.destroy();
 
   // ---------------------------------------------------------------------------

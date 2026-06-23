@@ -40,18 +40,9 @@ export class AuthService {
       email: registerDto.email,
       passwordHash,
       fullName: registerDto.fullName,
-      emailVerificationToken: verificationCode,
-      isEmailVerified: false,
+      emailVerificationToken: null,
+      isEmailVerified: true,
     });
-
-    // Send verification email (fire and forget)
-    const template = verificationTemplate(user.fullName, verificationCode);
-    this.notificationsService.send({
-      recipient: user.email,
-      subject: template.subject,
-      body: template.body,
-      idempotencyKey: `verify-${user.id}`,
-    }).catch(() => {});
 
     return this.generateTokens(user);
   }
@@ -60,10 +51,6 @@ export class AuthService {
     const user = await this.userService.findByEmail(loginDto.email);
     if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (!user.isEmailVerified) {
-      throw new UnauthorizedException('Email not verified. Please check your inbox for the verification code.');
     }
 
     const isPasswordValid = await HashUtil.compare(loginDto.password, user.passwordHash);

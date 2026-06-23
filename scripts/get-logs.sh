@@ -3,10 +3,10 @@
 
 AWS="$HOME/.local/bin/aws"
 REGION="eu-north-1"
-LOG_GROUP="/ecs/"
+LOG_GROUP="/ecs/scribe-api"
 
 # Current running task stream
-STREAM="ecs/scribe-api/180d47e51b1b4e88a708a454abb919b5"
+STREAM="ecs/scribe-api/0556c256f045457a9e9987621e10beed"
 echo "Log stream: $STREAM"
 echo ""
 

@@ -3,7 +3,7 @@ AWS="$HOME/.local/bin/aws"
 REGION="eu-north-1"
 
 $AWS logs describe-log-streams \
-  --log-group-name "/ecs/" \
+  --log-group-name "/ecs/scribe-api" \
   --region "$REGION" \
   --order-by LastEventTime \
   --descending \
