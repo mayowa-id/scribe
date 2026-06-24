@@ -33,7 +33,7 @@ docker push $ECR_REPO:latest
 # -- 3. Push secrets to SSM --
 echo ""
 echo "[3/5] Syncing secrets to SSM Parameter Store..."
-bash push-secrets.sh
+bash scripts/push-secrets.sh
 
 # -- 4. Register new task definition --
 echo ""

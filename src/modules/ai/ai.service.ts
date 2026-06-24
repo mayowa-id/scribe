@@ -133,7 +133,7 @@ Omit gracefully any fields that are null. No preamble — start the prompt direc
         userMessage: string,
     ): Promise<AsyncIterable<string> | null> {
         if (this.isMock) {
-            return this.mockTextStream();
+            return this.mockTextStream(true);
         }
 
         const systemContext = [
@@ -211,13 +211,14 @@ Your thematic preoccupations are personal responsibility, transformation, and th
 This is a mock voice profile — add your GOOGLE_AI_API_KEY to activate real synthesis.`;
     }
 
-    private async *mockTextStream(): AsyncIterable<string> {
-        const mockText =
-            `This is a mock AI generation. Your GOOGLE_AI_API_KEY is not yet configured. ` +
-            `Once you add it to the .env file, this stream will produce real content written in your synthesized voice profile. ` +
-            `The full pipeline — BullMQ jobs, SSE streaming, and database persistence — is operational.`;
+    private async *mockTextStream(isAssistant: boolean = false): AsyncIterable<string> {
+        const generationMock = `The Kingdom of God is not a distant reality awaiting our eventual arrival; it is a present invasion demanding our immediate surrender. We have spent too long conceptualizing the prophetic as merely predicting the future, when its true mandate is to reform the present. When we align our daily liturgy with the heartbeat of heaven, we stop surviving the culture and start shaping it. Let this be the hour where we awaken not just to revival, but to reformation.`;
+        
+        const assistantMock = `I can certainly help you expand on that thought. Your signature voice thrives on strong, declarative openings. Consider rephrasing the first sentence to: "The Kingdom of God is an active invasion, not a passive destination." This hits harder and aligns with your frequent use of contrasting parallels. Shall I weave this into the next paragraph?`;
 
-        const words = mockText.split(' ');
+        const textToStream = isAssistant ? assistantMock : generationMock;
+        
+        const words = textToStream.split(' ');
         for (const word of words) {
             await this.mockDelay(60);
             yield word + ' ';

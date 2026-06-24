@@ -13,9 +13,12 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { welcomeTemplate } from '../notifications/templates/welcome.template';
 import { verificationTemplate } from '../notifications/templates/verification.template';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 @Injectable()
 export class AuthService {
+  private sesClient: SESClient;
+
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
@@ -23,7 +26,15 @@ export class AuthService {
     private notificationsService: NotificationsService,
     @InjectRepository(RefreshToken)
     private refreshTokenRepository: Repository<RefreshToken>,
-  ) {}
+  ) {
+    this.sesClient = new SESClient({
+      region: this.configService.get<string>('AWS_REGION', 'eu-north-1'),
+      credentials: {
+        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID', ''),
+        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY', ''),
+      },
+    });
+  }
 
   async register(registerDto: RegisterDto) {
     const existingUser = await this.userService.findByEmail(registerDto.email);
@@ -40,18 +51,29 @@ export class AuthService {
       email: registerDto.email,
       passwordHash,
       fullName: registerDto.fullName,
-      emailVerificationToken: verificationCode,
-      isEmailVerified: false,
+      emailVerificationToken: null,
+      isEmailVerified: true,
     });
 
-    // Send verification email (fire and forget)
-    const template = verificationTemplate(user.fullName, verificationCode);
-    this.notificationsService.send({
-      recipient: user.email,
-      subject: template.subject,
-      body: template.body,
-      idempotencyKey: `verify-${user.id}`,
-    }).catch(() => {});
+    // Send a welcome email to the admins using SES
+    try {
+      const fromEmail = this.configService.get<string>('SES_FROM_EMAIL', 'notiscope@geraniol.xyz');
+      const command = new SendEmailCommand({
+        Source: fromEmail,
+        Destination: {
+          ToAddresses: [fromEmail], // sending to ourselves
+        },
+        Message: {
+          Subject: { Data: `New User Registration: ${user.fullName}` },
+          Body: {
+            Text: { Data: `A new user has just registered!\n\nName: ${user.fullName}\nEmail: ${user.email}` },
+          },
+        },
+      });
+      this.sesClient.send(command).catch(err => console.error('Failed to send SES email', err));
+    } catch (e) {
+      console.error('SES Setup Error', e);
+    }
 
     return this.generateTokens(user);
   }
@@ -60,10 +82,6 @@ export class AuthService {
     const user = await this.userService.findByEmail(loginDto.email);
     if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (!user.isEmailVerified) {
-      throw new UnauthorizedException('Email not verified. Please check your inbox for the verification code.');
     }
 
     const isPasswordValid = await HashUtil.compare(loginDto.password, user.passwordHash);
