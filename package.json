@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.33.0",
+    "@aws-sdk/client-ses": "^3.1075.0",
     "@google/generative-ai": "^0.24.1",
     "@liaoliaots/nestjs-redis": "^9.0.5",
     "@nestjs/axios": "^4.0.1",
