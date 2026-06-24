@@ -25,20 +25,22 @@ import { ScribeAssistantModule } from './modules/scribe-assistant/scribe-assista
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync(dbConfig),
-    RedisModule.forRootAsync(redisConfig),
     ScheduleModule.forRoot(),
-
-    // BullMQ — global Redis connection for all queues
-    BullModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          host: configService.get<string>('REDIS_HOST', 'localhost'),
-          port: configService.get<number>('REDIS_PORT', 6379),
-        },
-      }),
-    }),
+    ...(process.env.NODE_ENV === 'production'
+      ? [
+          RedisModule.forRootAsync(redisConfig),
+          BullModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+              connection: {
+                host: configService.get<string>('REDIS_HOST', 'localhost'),
+                port: configService.get<number>('REDIS_PORT', 6379),
+              },
+            }),
+          }),
+        ]
+      : []),
 
     // Feature modules
     UserModule,
